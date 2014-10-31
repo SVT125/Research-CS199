@@ -27,7 +27,6 @@ def read_data(file_name: str) -> None:
         		# use \t and \r\n to split (tabs and return)
                 	# split the line and put in x,y,z...
         	'''
-        	#f.close() # need to flush?
 
 # TODO - To take a triple of values instead, won't just be single lined.
 def corr(x: float, y: float) -> float:
