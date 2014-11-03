@@ -20,15 +20,14 @@ def run(threshold: float) -> None:
 
 # Will assume returns nothing as it will modify global vars
 def read_data(file_name: str) -> None:
+	''' Reads the data in to list vars x, y, z
         with open(file_name, 'r') as f: #Increases efficiency and removes need for f.close() by auto closing, even if there is an error
         	lines = f.readlines() # look in docs to loop over all lines
-        	'''
         	for line in lines:
-                	# vars = line.split('\t')
-                	# x.append(vars[0])
-                	# y.append(vars[1])
-                	# z.append(vars[2])
-        	'''
+                vars = line.split('\t')
+                	x.append(vars[0])
+                	y.append(vars[1])
+                	z.append(vars[2])
 
 # TODO - To take a triple of values instead, won't just be single lined.
 def corr(x: float, y: float) -> float:
