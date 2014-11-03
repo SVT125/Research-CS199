@@ -24,8 +24,10 @@ def read_data(file_name: str) -> None:
         	lines = f.readlines() # look in docs to loop over all lines
         	'''
         	for line in lines:
-        		# use \t and \r\n to split (tabs and return)
-                	# split the line and put in x,y,z...
+                	# vars = line.split('\t')
+                	# x.append(vars[0])
+                	# y.append(vars[1])
+                	# z.append(vars[2])
         	'''
 
 # TODO - To take a triple of values instead, won't just be single lined.
