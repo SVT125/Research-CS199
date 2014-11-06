@@ -20,7 +20,7 @@ def run(threshold: float) -> None:
 
 # Will assume returns nothing as it will modify global vars
 def read_data(file_name: str) -> None:
-	''' Reads the data in to list vars x, y, z
+	''' Reads the data in to list vars x, y, z'''
         with open(file_name, 'r') as f: #Increases efficiency and removes need for f.close() by auto closing, even if there is an error
         	lines = f.readlines() # look in docs to loop over all lines
         	for line in lines:
@@ -38,5 +38,5 @@ def plot(x:'list of float', y: 'list of float', z: 'list of float') -> None:
 	'''Plots the lists xyz in a 3D graph.'''
 	fig = plt.figure()
 	ax = Axes3D(fig)
-	ax.plot(xs = x, ys = y, zs = z, zdir = 'z', label = 'ys=0, zdir = z')
+	ax.scatter(xs = x, ys = y, zs = z, zdir = 'z', label = 'ys=0, zdir = z')
 	plt.show()
