@@ -1,0 +1,24 @@
+Guide for FITS
+--------------
+Retrieving General Information
+1. import pyfits
+2. Get the "header" of a file by calling pyfits.header(<file name here>,<extension number>) - say, variable name "header".
+	If no second argument is given for an extension, the primary HDU will be returned (HDU = header/data tables).
+	(Most data will be in the extensions...)
+3. Call header.keys() to get a dictionary (equivalent of a Map in Java). If called in shell, will print a list of keys.
+4. Index into the header by the keys to get the information. e.g. header['keyname'].
+
+-If the header has a keyword, we can directly access its data by pyfits.getval(<file name>, <keyword>, <extension name>).
+-If the value is not a single number value, a string might be returned (e.g. 'TABLE' for ASCII table, 'IMAGE' for image array).
+
+Retrieving Data
+1. Call pyfits.getdata(<file name>, <HDU number>).
+	Can also call data, headers = pyfits.getdata(<file name>, <HDU number>, header=True)
+	If the data is an image, then the data is returned as an object of type <numpy.ndarray>.
+		Can call shape() on it to get a tuple which describes the NAXIS vars. 
+			-NAXIS1: columns (x-axis), NAXIS2: rows (y-axis), NAXIS-3: pages (z-axis).
+		Can display the image through numdisplay.display(<data object>). MUST IMPORT NUMDISPLAY.
+			-Can index into the "data cube" like an array. (Need more specifics...)
+	If the data is a table, then it can be indexed into like a 2d array, e.g. data[2][3] for the third row, fourth column values.
+
+Can refer back to the astropython website for the header keywords and their descriptions.
