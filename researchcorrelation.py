@@ -17,14 +17,14 @@ def run(threshold: float) -> None:
                         print('lelele') # increment counter, retrieve vars from indices, calculate corr
 
 def read_data(file_name: str) -> None:
-	''' Reads the data in to list vars x, y, z'''
+        '''Reads the data in to list vars x, y, z'''
         with open(file_name, 'r') as f:
                 lines = f.readlines()
         	for line in lines:
-                        vars = line.split('\t')
-                        x.append(vars[0])
-                        y.append(vars[1])
-                        z.append(vars[2])
+                        variables = line.split('\t')
+                        x.append(variables[0])
+                        y.append(variables[1])
+                        z.append(variables[2])
 
 def corr(x: float, y: float) -> float:
         '''Takes a pair of values to return the Pearson correlation.'''
