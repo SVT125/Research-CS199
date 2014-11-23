@@ -22,13 +22,6 @@ def anomalydetection(pos:str, threshold:float, examples:dict) -> bool:
         probability = probability * normpdf(features[pos][feature_keys[i]],means[i],stddevs[i])
     return probability < threshold
 
-def retrieve_dict_vector(d:dict,key:str) -> list:
-    '''Returns a list of all features across every example in d given a key.'''
-    vector = []
-    for example_key in d.keys():
-        vector.append(d[example_key][key])
-    return vector
-
 def optimize_threshold(labels:'list of bool',threshold:float, correctness:float, step_factor:float, examples:dict) -> float:
     '''Returns the optimized threshold given the example labels. Will assume
     decreasing values as partial derivatives can't easily be implemented without
