@@ -3,40 +3,23 @@ from scipy.stats.stats import pearsonr
 import matplotlib
 import matplotlib.pyplot as plt
 
-x = []
-y = []
-z = []
-variables = [] # names of variables
-galaxy_counter = [] # fill in with counters per galaxy
-threshold = 0.01 # wat
-
 def run(threshold: float) -> None:
         '''Increments galaxy_counter for correlations above threshold for permutations of all variables'''
         for i in range(len(variables)):
                 for j in range(len(variables)):
                         print('lelele') # increment counter, retrieve vars from indices, calculate corr
 
-def read_data(file_name: str) -> None:
-        '''Reads the data in to list vars x, y, z'''
-        with open(file_name, 'r') as f:
-                lines = f.readlines()
-        	for line in lines:
-                        variables = line.split('\t')
-                        x.append(variables[0])
-                        y.append(variables[1])
-                        z.append(variables[2])
-
 def corr(x: 'list of float', y: 'list of float', z: 'list of float') -> float:
-	'''Takes three lists of x,y,z to calculate the 3D Pearson correlation.'''
-	return ((pearsonr(x,z)**2 + pearsonr(y,z)**2 - 2 * pearsonr(x,z) * pearsonr(y,z) * pearsonr(x,y))/(1-pearsonr(x,y))**2)** .5
-	
-def plot(x:'list of float', y: 'list of float', z: 'list of float', labels=None:'list of bool') -> None:
-	'''Plots the lists xyz in a 3D graph.'''
-	fig = plt.figure()
-	ax = Axes3D(fig)
-	if labels == None:
+        '''Takes three lists of x,y,z to calculate the 3D Pearson correlation.'''
+        return ((pearsonr(x,z)**2 + pearsonr(y,z)**2 - 2 * pearsonr(x,z) * pearsonr(y,z) * pearsonr(x,y))/(1-pearsonr(x,y))**2)** .5
+        
+def plot(x:'list of float', y: 'list of float', z: 'list of float', labels=None) -> None:
+        '''Plots the lists xyz in a 3D graph.'''
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        if labels == None:
                 ax.scatter(xs = x, ys = y, zs = z, zdir = 'z', label = 'ys=0, zdir = z')
-        else:   
+        else:
                 nonanomalies_x = [element for element in x if not x[x.index(element)]]
                 nonanomalies_y = [element for element in y if not y[y.index(element)]]
                 nonanomalies_z = [element for element in z if not z[z.index(element)]]
@@ -45,7 +28,7 @@ def plot(x:'list of float', y: 'list of float', z: 'list of float', labels=None:
                 anomalies_y = [element for element in z if z[z.index(element)]]
                 ax.scatter(xs = anomalies_x, ys = anomalies_y, zs = anomalies_z, c = 'red', zdir = 'z', label = 'ys=0, zdir = z')
                 ax.scatter(xs = nonanomalies_x, ys = nonanomalies_y, zs = nonanomalies_z, c = 'blue',zdir = 'z', label = 'ys=0, zdir = z')
-	plt.show()
+        plt.show()
 
 #I could not figure out how to add a new file so here is my beta-ish data organization script:
 #It takes a file and a set of 2 or 3 variable names and creates a master dict of all galaxies
@@ -55,33 +38,34 @@ from collections import namedtuple
 
 parameters = []
 master = {} #A dictionary with the key as the name and the value as a 
-	    #Galaxy dict with each key value pair as a variable name and value
+            #Galaxy dict with each key value pair as a variable name and value
 str_params = ''
 x=[]
 y=[]
 z=[]
 
 def setup():
-    global master, x, y, z
-    print("""Please input the coordinate value names. Note: if you press enter without 
-declaring a z value the program will continue as a 2 dimensional correlation. Also,
-please ensure that all values are the exact names as written in the data file.""")
-    while True:
-        x_value = input("What is the x coordinate value name: ").lower().strip()
-        y_value = input("What is the y coordinate value name: ").lower().strip()
-        z_value = input("What is the z coordinate value name: ").lower().strip()
-        try:
-            assert x_value in parameters and y_value in parameters and ((z_value in parameters) or z_value==''), "One or more of your parameters was invalid"
-            assert x_value!=y_value!=z_value, "Two or more of your parameters were the same"
-            break
-        except:
-            continue
-    for k,v in sorted(master.items()):
-        x.append(v[x_value])
-        y.append(v[y_value])
+        global master, x, y, z
+        print("""Please input the coordinate value names. Note: if you press enter without 
+        declaring a z value the program will continue as a 2 dimensional correlation. Also,
+        please ensure that all values are the exact names as written in the data file.""")
+        while True:
+                x_value = input("What is the x coordinate value name: ").lower().strip()
+                y_value = input("What is the y coordinate value name: ").lower().strip()
+                z_value = input("What is the z coordinate value name: ").lower().strip()
+                try:
+                        assert x_value in parameters and y_value in parameters and ((z_value in parameters) or z_value==''), "One or more of your parameters was invalid"
+                        assert x_value!=y_value!=z_value, "Two or more of your parameters were the same"
+                        break
+                except:
+                        continue
+                
+        for k,v in sorted(master.items()):
+                x.append(v[x_value])
+                y.append(v[y_value])
         if z_value != '':
-            z.append(v[z_value])
-    return
+                z.append(v[z_value])
+        return
 
 def galaxy_in(data:[str]):
     galaxy={}
