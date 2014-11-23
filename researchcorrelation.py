@@ -26,9 +26,9 @@ def read_data(file_name: str) -> None:
                         y.append(variables[1])
                         z.append(variables[2])
 
-def corr(x: float, y: float) -> float:
-        '''Takes a pair of values to return the Pearson correlation.'''
-	return pearsonr(x,y)
+def corr(x: 'list of float', y: 'list of float', z: 'list of float') -> float:
+	'''Takes three lists of x,y,z to calculate the 3D Pearson correlation.'''
+	return ((pearsonr(x,z)**2 + pearsonr(y,z)**2 - 2 * pearsonr(x,z) * pearsonr(y,z) * pearsonr(x,y))/(1-pearsonr(x,y))**2)** .5
 	
 def plot(x:'list of float', y: 'list of float', z: 'list of float', labels=None:'list of bool') -> None:
 	'''Plots the lists xyz in a 3D graph.'''
@@ -46,13 +46,6 @@ def plot(x:'list of float', y: 'list of float', z: 'list of float', labels=None:
                 ax.scatter(xs = anomalies_x, ys = anomalies_y, zs = anomalies_z, c = 'red', zdir = 'z', label = 'ys=0, zdir = z')
                 ax.scatter(xs = nonanomalies_x, ys = nonanomalies_y, zs = nonanomalies_z, c = 'blue',zdir = 'z', label = 'ys=0, zdir = z')
 	plt.show()
-
-
-
-
-
-
-
 
 #I could not figure out how to add a new file so here is my beta-ish data organization script:
 #It takes a file and a set of 2 or 3 variable names and creates a master dict of all galaxies
