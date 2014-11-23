@@ -3,12 +3,6 @@ from scipy.stats.stats import pearsonr
 import matplotlib
 import matplotlib.pyplot as plt
 
-def run(threshold: float) -> None:
-        '''Increments galaxy_counter for correlations above threshold for permutations of all variables'''
-        for i in range(len(variables)):
-                for j in range(len(variables)):
-                        print('lelele') # increment counter, retrieve vars from indices, calculate corr
-
 def corr(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict) -> float:
         '''Takes three lists of x,y,z to calculate the 3D Pearson correlation.'''
         x = retrieve_dict_vector(galaxies,x_key)
