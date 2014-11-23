@@ -9,14 +9,22 @@ def run(threshold: float) -> None:
                 for j in range(len(variables)):
                         print('lelele') # increment counter, retrieve vars from indices, calculate corr
 
-def corr(x: 'list of float', y: 'list of float', z: 'list of float') -> float:
+def corr(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict) -> float:
         '''Takes three lists of x,y,z to calculate the 3D Pearson correlation.'''
+        x = retrieve_dict_vector(galaxies,x_key)
+        y = retrieve_dict_vector(galaxies,y_key)
+        z = retrieve_dict_vector(galaxies,z_key)
         return ((pearsonr(x,z)**2 + pearsonr(y,z)**2 - 2 * pearsonr(x,z) * pearsonr(y,z) * pearsonr(x,y))/(1-pearsonr(x,y))**2)** .5
         
-def plot(x:'list of float', y: 'list of float', z: 'list of float', labels=None) -> None:
+def plot(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict, labels=None) -> None:
         '''Plots the lists xyz in a 3D graph.'''
         fig = plt.figure()
         ax = Axes3D(fig)
+        
+        x = retrieve_dict_vector(galaxies,x_key)
+        y = retrieve_dict_vector(galaxies,y_key)
+        z = retrieve_dict_vector(galaxies,z_key)
+        
         if labels == None:
                 ax.scatter(xs = x, ys = y, zs = z, zdir = 'z', label = 'ys=0, zdir = z')
         # Colors the outliers, fix for galaxy dicts
