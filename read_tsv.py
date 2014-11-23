@@ -1,5 +1,6 @@
 def read_tsv(filename:'str') -> None:
         '''Reads the TSV file and writes the spiral galaxy subset to file (for later use).'''
+        '''Writes the file by printing the variable names first, then separate by a line of asterisks.'''
         f = open(filename,"r")
         lines = []
         first_line = f.readline().split("\t") # read in the variable 
@@ -35,6 +36,7 @@ def read_tsv(filename:'str') -> None:
         for index in indices:
                for key in information.keys():
                        outfile.write(information[key][index] + '\t')
+               outfile.write('*' * 25 + '\t') 
         outfile.close()
 
 read_tsv('SF5+PetroRads+GZ1+Banerji+photoz.tsv')
