@@ -185,4 +185,4 @@ if __name__ == '__main__':
     print(parameters) #check
     print('\n\n')
     print(x,y,z) #check
-    plot(x_value, y_value, z_value, galaxies: master)
+    plot(x_value, y_value, z_value, master)
