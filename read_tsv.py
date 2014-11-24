@@ -33,10 +33,13 @@ def read_tsv(filename:'str') -> None:
 
         # Print the file, each line a galaxy with its variables split by whitespace.
         outfile = open('spiralgalaxies.txt','w')
+        for name in first_line:
+                outfile.write(name + '\t')
+        outfile.write('\\\\' + '\t')
         for index in indices:
                for key in information.keys():
                        outfile.write(information[key][index] + '\t')
-               outfile.write('*' * 25 + '\t') 
+               outfile.write('\\' + '\t') 
         outfile.close()
 
 read_tsv('SF5+PetroRads+GZ1+Banerji+photoz.tsv')
