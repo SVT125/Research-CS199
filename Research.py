@@ -1,55 +1,61 @@
 from collections import namedtuple
-import pyfits
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.stats.stats import pearsonr
-import matplotlib
-import matplotlib.pyplot as plt
+import os.path
+#import pyfits
+#from mpl_toolkits.mplot3d import Axes3D
+#from scipy.stats.stats import pearsonr
+#import matplotlib
+#import matplotlib.pyplot as plt
 
-def corr(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict) -> float:
-        '''Takes three lists of x,y,z to calculate the 3D Pearson correlation.'''
-        x = retrieve_dict_vector(galaxies,x_key)
-        y = retrieve_dict_vector(galaxies,y_key)
-        z = retrieve_dict_vector(galaxies,z_key)
-        return ((pearsonr(x,z)**2 + pearsonr(y,z)**2 - 2 * pearsonr(x,z) * pearsonr(y,z) * pearsonr(x,y))/(1-pearsonr(x,y))**2)** .5
+#todo:  find actual correlaations and the files associated with them, check for same galaxy names across files
+#       make tsv file read in, in this file
+#       find interesting correlations
+#       make it so you can read multiple files, assume all galaxy names are consistent (see 1)
+#       clean this file up
+
+
+def read_tsv(filename:'str') -> None:
+        '''Reads the TSV file and writes the spiral galaxy subset to file (for later use).'''
+        '''Writes the file by printing the variable names first, then separate by a line of asterisks.'''
+        f = open(filename,"r")
+        lines = []
+        first_line = f.readline().split("\t") # read in the variable 
+        information = {key: [] for key in first_line} # dictionary of variable lists (galaxies horizontally)
+        n = 0
+        for line in f:
+                n+=1
+                if n%100000==0:
+                        print("Copying line",n)
+                spl = line.split("\t")
+                for i in range(0,len(first_line)):
+                        word = first_line[i]
+                        information[word].append(spl[i])
+        f.close()
+
+        l = [information[quan] for quan in ["P_CS","diskAxisRatio"]]#data to work with of the quantities
         
-def plot(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict, labels=None) -> None:
-        '''Plots the lists xyz in a 3D graph.'''
-        fig = plt.figure()
-        ax = Axes3D(fig)
+        indices = []
+        number = [0.8,0.5]
         
-        x = retrieve_dict_vector(galaxies,x_key)
-        y = retrieve_dict_vector(galaxies,y_key)
-        z = retrieve_dict_vector(galaxies,z_key)
-        
-        if labels == None:
-                ax.scatter(xs = x, ys = y, zs = z, zdir = 'z', label = 'ys=0, zdir = z')
-        # Colors the outliers, fix for galaxy dicts
-        '''
-        else:
-                nonanomalies_x = [element for element in x if not x[x.index(element)]]
-                nonanomalies_y = [element for element in y if not y[y.index(element)]]
-                nonanomalies_z = [element for element in z if not z[z.index(element)]]
-                anomalies_x = [element for element in x if x[x.index(element)]]
-                anomalies_y = [element for element in y if y[y.index(element)]]
-                anomalies_y = [element for element in z if z[z.index(element)]]
-                ax.scatter(xs = anomalies_x, ys = anomalies_y, zs = anomalies_z, c = 'red', zdir = 'z', label = 'ys=0, zdir = z')
-                ax.scatter(xs = nonanomalies_x, ys = nonanomalies_y, zs = nonanomalies_z, c = 'blue',zdir = 'z', label = 'ys=0, zdir = z')
-        '''
-        plt.show()
-        
-def retrieve_dict_vector(d:dict,key:str) -> list:
-        '''Returns a list of all features across every example in d given a key.'''
-        vector = []
-        for example_key in d.keys():
-                vector.append(d[example_key][key])
-        return vector
+        for i in range(len(l[0])):
+                to_return = True #Will be flipped off if one of the two quantities is off
+                for j in range(len(l)):
+                        num = abs(float(l[j][i]))
+                        if num <= number[j]:
+                                to_return = False
+                                
+                if to_return == True:
+                        indices.append(i)
 
-
-
-
-
-
-
+        # Print the file, each line a galaxy with its variables split by whitespace.
+        outfile = open('spiralgalaxies.txt','w')
+        for name in first_line:
+                outfile.write(name + '\t')
+        outfile.write('\n')
+        for index in indices:
+               for key in information.keys():
+                       outfile.write(information[key][index] + '\t')
+               outfile.write('\n') 
+        outfile.close()
 
 
 parameters = []
@@ -59,19 +65,16 @@ str_params = ''
 x=[]
 y=[]
 z=[]
-x_value=''
-y_value=''
-z_value=''
 
-def setup():
-    global master, x, y, z, file_name, x_value, y_value, z_value
+def setup(files):
+    global master, x, y, z, file_name
     print("""Please input the coordinate value names. Note: if you press enter without 
 declaring a z value the program will continue as a 2 dimensional correlation. Also,
 please ensure that all values are the exact names as written in the data file.""")
     while True:
-        x_value = input("What is the x coordinate value name: ").lower().strip()
-        y_value = input("What is the y coordinate value name: ").lower().strip()
-        z_value = input("What is the z coordinate value name: ").lower().strip()
+        x_value = input("What is the x coordinate value name: ").strip()
+        y_value = input("What is the y coordinate value name: ").strip()
+        z_value = input("What is the z coordinate value name: ").strip()
         break
         #try:
             #assert x_value in parameters and y_value in parameters and ((z_value in parameters) or z_value==''), "One or more of your parameters was invalid"
@@ -81,15 +84,22 @@ please ensure that all values are the exact names as written in the data file.""
         #except:
             #continue
         #print('yes')
-    if file_name.find('.fit'):
-        read_fits_data(file_name, x_value, y_value, z_value)
-    elif file_name.find('.txt'):
-        read_data(file_name, x_value, y_value, z_value)
-    for k,v in sorted(master.items()):
-        x.append(v[x_value])
-        y.append(v[y_value])
-        if z_value != '':
-            z.append(v[z_value])
+    for file_name in files:
+        if file_name.find('.fit') != -1:
+            read_fits_data(file_name, x_value, y_value, z_value)
+        elif file_name.find('.txt') != -1:
+            read_data(file_name, x_value, y_value, z_value)
+        elif file_name.find('.tsv') != -1:
+            read_tsv(file_name)
+            read_data('spiralgalaxies.txt', x_value, y_value, z_value)
+        try:
+            for k,v in sorted(master.items()):
+                x.append(v[x_value])
+                y.append(v[y_value])
+                if z_value != '':
+                    z.append(v[z_value])
+        except KeyError as err:
+            print("{} was not found in file {}".format(err,file_name))
     return
 
 def galaxy_in(data:[str]):
@@ -127,15 +137,18 @@ def read_data(file_name: str, x_value, y_value, z_value) -> None:
         for p in param_line:
             parameters.append(p)
             str_params += p + ' '
+        sub_data=[0,0,0]
         for line in lines:
-            if parameters[index]==x_value:
-                sub_data[0]=line[index]
-            elif parameters[index]==y_value:
-                sub_data[1]=line[index]
-            elif parameters[index]==z_value:
-                sub_data[2]=line[index]
-        master[line.split('\t')[0]] = galaxy_in(line.strip('\n').split('\t'))
+            for index in range(len(line.split('\t'))):
+                if parameters[index]==x_value:
+                    sub_data[0]=line[index]
+                elif parameters[index]==y_value:
+                    sub_data[1]=line[index]
+                elif parameters[index]==z_value:
+                    sub_data[2]=line[index]
+        master[line.split('\t')[0]] = galaxy_in(sub_data)
     print("File read in succesfully")
+    #print(sub_data)
             
 def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
     global str_params, parameters, master
@@ -172,15 +185,39 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
         #for line in lines:
             #master[line.split('\t')[0]] = galaxy_in(line.strip('\n').split('\t'))
 
+def files(number: int):
+    result = []
+    if number == 1:
+        result.append(input("What is the name of the file: "))
+    elif number > 1:
+        result = []
+        result.append(input("What is the name of the first file: "))
+        for i in range(number-1):
+            result.append(input("What is the name of the next file: "))
+    for file in result:
+        if not os.path.isfile(file):
+            raise FileNotFoundError
+    print(result)
+    return result
+
 if __name__ == '__main__':
     while True:
         try:
-            file_name = input("What is the name of the file: ")
+            check = int(input("How many files will be used? "))
+            if check >=1:
+                file = files(check)
+                setup(file)
+                break
+            else:
+                print("Number of files must be 1 or more")
+                continue
             break
-        except (FileNotFoundError):
-            print("Error: this file either does not exist of is not in this directory.")
+        except (ValueError):
+            print("Error: you must input an integer greater than 0")
             continue
-    setup()
+        except (FileNotFoundError):
+            print("Error: one or more of the specified files either does not exist of is not in this directory")
+            continue
     #print(str_params) #not written
     #print('\n\n')
     print(master.items()) #check
@@ -188,4 +225,4 @@ if __name__ == '__main__':
     print(parameters) #check
     print('\n\n')
     print(x,y,z) #check
-    plot(x_value, y_value, z_value, master)
+    #plot(x_value, y_value, z_value, master)

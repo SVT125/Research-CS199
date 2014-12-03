@@ -18,11 +18,9 @@ def plot(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict, labels=None) 
         x = retrieve_dict_vector(galaxies,x_key)
         y = retrieve_dict_vector(galaxies,y_key)
         z = retrieve_dict_vector(galaxies,z_key)
-        
+        # Colors the outliers, fix for galaxy dicts
         if labels == None:
                 ax.scatter(xs = x, ys = y, zs = z, zdir = 'z', label = 'ys=0, zdir = z')
-        # Colors the outliers, fix for galaxy dicts
-        '''
         else:
                 nonanomalies_x = [element for element in x if not x[x.index(element)]]
                 nonanomalies_y = [element for element in y if not y[y.index(element)]]
@@ -32,7 +30,6 @@ def plot(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict, labels=None) 
                 anomalies_y = [element for element in z if z[z.index(element)]]
                 ax.scatter(xs = anomalies_x, ys = anomalies_y, zs = anomalies_z, c = 'red', zdir = 'z', label = 'ys=0, zdir = z')
                 ax.scatter(xs = nonanomalies_x, ys = nonanomalies_y, zs = nonanomalies_z, c = 'blue',zdir = 'z', label = 'ys=0, zdir = z')
-        '''
         plt.show()
         
 def retrieve_dict_vector(d:dict,key:str) -> list:

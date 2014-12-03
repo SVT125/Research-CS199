@@ -35,11 +35,11 @@ def read_tsv(filename:'str') -> None:
         outfile = open('spiralgalaxies.txt','w')
         for name in first_line:
                 outfile.write(name + '\t')
-        outfile.write('\\\\' + '\t')
+        outfile.write('\n')
         for index in indices:
                for key in information.keys():
                        outfile.write(information[key][index] + '\t')
-               outfile.write('\\' + '\t') 
+               outfile.write('\n') 
         outfile.close()
 
 read_tsv('SF5+PetroRads+GZ1+Banerji+photoz.tsv')
