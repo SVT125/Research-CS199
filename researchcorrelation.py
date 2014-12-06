@@ -10,6 +10,16 @@ def corr(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict) -> float:
         z = retrieve_dict_vector(galaxies,z_key)
         return ((pearsonr(x,z)**2 + pearsonr(y,z)**2 - 2 * pearsonr(x,z) * pearsonr(y,z) * pearsonr(x,y))/(1-pearsonr(x,y))**2)** .5
         
+def plot(x_key:'key',y_key:'key', galaxies:dict, labels=None) -> None:
+        '''Plots the lists xy in a 2D graph.'''
+        x = retrieve_dict_vector(galaxies,x_key)
+        y = retrieve_dict_vector(galaxies,y_key)
+        plt.plot(x,y)
+        if labels != None:
+                pass #outliers with labels
+        plt.show()
+  
+        
 def plot(x_key: 'key', y_key: 'key', z_key: 'key', galaxies: dict, labels=None) -> None:
         '''Plots the lists xyz in a 3D graph.'''
         fig = plt.figure()
