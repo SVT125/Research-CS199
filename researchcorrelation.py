@@ -14,7 +14,7 @@ def plot(x_key:'key',y_key:'key', galaxies:dict, labels=None) -> None:
         '''Plots the lists xy in a 2D graph.'''
         x = retrieve_dict_vector(galaxies,x_key)
         y = retrieve_dict_vector(galaxies,y_key)
-        plt.plot(x,y)
+        plt.scatter(x,y)
         if labels != None:
                 pass #outliers with labels
         plt.show()
