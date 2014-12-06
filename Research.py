@@ -141,11 +141,11 @@ def read_data(file_name: str, x_value, y_value, z_value) -> None:
         for line in lines:
             for index in range(len(line.split('\t'))):
                 if parameters[index]==x_value:
-                    sub_data[0]=line[index]
+                    sub_data[0]=line.split('\t')[index]
                 elif parameters[index]==y_value:
-                    sub_data[1]=line[index]
+                    sub_data[1]=line.split('\t')[index]
                 elif parameters[index]==z_value:
-                    sub_data[2]=line[index]
+                    sub_data[2]=line.split('\t')[index]
         master[line.split('\t')[0]] = galaxy_in(sub_data)
     print("File read in succesfully")
     #print(sub_data)
