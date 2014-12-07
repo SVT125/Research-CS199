@@ -1,10 +1,10 @@
 from collections import namedtuple
 import os.path
 import pyfits
-#from mpl_toolkits.mplot3d import Axes3D
-#from scipy.stats.stats import pearsonr
-#import matplotlib
-#import matplotlib.pyplot as plt
+from scipy.stats.stats import pearsonr
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 parameters = []
 master = {} #A dictionary with the key as the name and the value as a 
@@ -49,6 +49,8 @@ please ensure that all values are the exact names as written in the data file.""
     if not done:
         print("One or more of the specified values was not found in any given file")
         setup(files)
+    print('Correlation: ' + str(corr(x_value,y_value,master)))
+    plot(x_value,y_value,master)
     return
 
 def galaxy_in(data:[str], param_index:[int]):
@@ -111,7 +113,6 @@ def read_data(file_name: str, x_value, y_value, z_value) -> None:
                 elif parameters[index]==z_value and z_value != '':
                     sub_data[2]=line[index]
             master[line[0]] = galaxy_in(sub_data, param_index)
-    #print(master.items())
     print("File read in succesfully")
 
 def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
@@ -123,6 +124,7 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
     param_line_keys=param_line.keys()
     data, param_line=pyfits.getdata(f, 1, header=True)
     parameter_list=data.names
+    print(parameter_list)
     param_index=[0,0,0]
     x_presence=False
     y_presence=False
@@ -148,13 +150,13 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
     sub_data=[0,0,0]
     for line in data:
         print("Reading in galaxy "+str(line[0]))
-        for index in range(len(line)):
-            if parameters[index]==x_value:
-                sub_data[0]=line[index]
-            elif parameters[index]==y_value:
-                sub_data[1]=line[index]
-            elif parameters[index]==z_value:
-                sub_data[2]=line[index]
+            #if parameters[index]==x_value:
+        sub_data[0]=line[x_value]
+            #elif parameters[index]==y_value:
+        sub_data[1]=line[y_value]
+            #elif parameters[index]==z_value:
+        if z_value != '':
+            sub_data[2]=line[z_value]
         master[line[0]] = fits_galaxy_in(sub_data, param_index)
     print("File read in succesfully")
 
@@ -222,6 +224,29 @@ def files(number: int):
     print("Files to be use: "+str(result))
     return result
 
+def corr(x_key: 'key', y_key: 'key', galaxies: dict) -> float:
+        '''Takes two lists of x,y to calculate the 2D Pearson correlation.'''
+        x = retrieve_dict_vector(galaxies,x_key)
+        y = retrieve_dict_vector(galaxies,y_key)
+        correlations = pearsonr(x,y)
+        return correlations[0]
+
+def plot(x_key:'key',y_key:'key', galaxies:dict, labels=None) -> None:
+        '''Plots the lists xy in a 2D graph.'''
+        x = retrieve_dict_vector(galaxies,x_key)
+        y = retrieve_dict_vector(galaxies,y_key)
+        plt.scatter(x,y)
+        if labels != None:
+                pass #outliers with labels
+        plt.show()
+
+def retrieve_dict_vector(d:dict,key:str) -> 'list of float':
+        '''Returns a list of all features across every example in d given a key.'''
+        vector = []
+        for example_key in d.keys():
+                vector.append(float(d[example_key][key]))
+        return vector
+
 if __name__ == '__main__':
     while True:
         try:
@@ -241,10 +266,4 @@ if __name__ == '__main__':
             print("Error: one or more of the specified files either does not exist of is not in this directory")
             continue
     #print(str_params) #not written
-    #print()
-    #print(list(master.items()))
-    #print()
-    #print(parameters)
-    #print()
-    #print(x,y,z)
     #plot(x_value, y_value, z_value, master)
