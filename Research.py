@@ -76,23 +76,15 @@ please ensure that all values are the exact names as written in the data file.""
         y_value = input("What is the y coordinate value name: ").strip()
         z_value = input("What is the z coordinate value name: ").strip()
         break
-        #try:
-            #assert x_value in parameters and y_value in parameters and ((z_value in parameters) or z_value==''), "One or more of your parameters was invalid"
-            #print('1')
-            #assert x_value!=y_value!=z_value, "Two or more of your parameters were the same"
-            #break
-        #except:
-            #continue
-        #print('yes')
     for file_name in files:
-        if file_name.find('.fit') != -1:
-            read_fits_data(file_name, x_value, y_value, z_value)
-        elif file_name.find('.txt') != -1:
-            read_data(file_name, x_value, y_value, z_value)
-        elif file_name.find('.tsv') != -1:
-            read_tsv(file_name)
-            read_data('spiralgalaxies.txt', x_value, y_value, z_value)
         try:
+            if file_name.find('.fit') != -1:
+                read_fits_data(file_name, x_value, y_value, z_value)
+            elif file_name.find('.txt') != -1:
+                read_data(file_name, x_value, y_value, z_value)
+            elif file_name.find('.tsv') != -1:
+                read_tsv(file_name)
+                read_data('{}.txt'.format(file_name[0:-4]), x_value, y_value, z_value)
             for k,v in sorted(master.items()):
                 x.append(v[x_value])
                 y.append(v[y_value])
@@ -100,18 +92,19 @@ please ensure that all values are the exact names as written in the data file.""
                     z.append(v[z_value])
         except KeyError as err:
             print("{} was not found in file {}".format(err,file_name))
+            setup(files)
     return
 
-def galaxy_in(data:[str]):
+def galaxy_in(data:[str], param_index:[int]):
     galaxy={}
-    for item_index in range(len(data)):
+    for index in range(len(data)):
         try:
-            galaxy[parameters[item_index]] = int(data[item_index])
+            galaxy[parameters[param_index[index]]] = int(data[index])
         except:
-            galaxy[parameters[item_index]] = data[item_index]
+            galaxy[parameters[param_index[index]]] = data[index]
     return galaxy
 
-def fits_galaxy_in(data):
+def fits_galaxy_in(data, param_index): #working on this now
     global parameters
     galaxy={}
     index=0
@@ -124,7 +117,6 @@ def fits_galaxy_in(data):
             #print('indexerror')
             break
     return galaxy
-        
 
 def read_data(file_name: str, x_value, y_value, z_value) -> None:
     global str_params, parameters, master
@@ -132,26 +124,42 @@ def read_data(file_name: str, x_value, y_value, z_value) -> None:
     with open(file_name, 'r') as f:
         lines = f.readlines()
         param_line=lines[0].strip('\n').split('\t')
-        param_line[-1]=param_line[-1][:]
         lines=lines[1:]
-        for p in param_line:
-            parameters.append(p)
-            str_params += p + ' '
+        param_index=[0,0,0]
+        x_presence=False
+        y_presence=False
+        z_presence=False
+        for index in range(len(param_line)):
+            if param_line[index]==x_value:
+                x_presence=True
+                param_index[0]=index
+            if param_line[index]==y_value:
+                y_presence=True
+                param_index[1]=index
+            if param_line[index]==z_value:
+                z_presence=True
+                param_index[2]=index
+            parameters.append(param_line[index])
+            str_params += param_line[index] + ' '
+        if not x_presence:
+            raise KeyError (x_value)
+        if not y_presence:
+            raise KeyError (y_value)
+        if not z_presence and z_value!='':
+            raise KeyError (z_value)
         sub_data=[0,0,0]
-        num = 0
         for line in lines:
-            for index in range(len(line.split('\t'))):
+            line=line[:-1].split('\t')
+            for index in range(len(line)):
                 if parameters[index]==x_value:
-                    sub_data[0]=line.split('\t')[index]
+                    sub_data[0]=line[index]
                 elif parameters[index]==y_value:
-                    sub_data[1]=line.split('\t')[index]
+                    sub_data[1]=line[index]
                 elif parameters[index]==z_value:
-                    sub_data[2]=line.split('\t')[index]
-            master[num] = galaxy_in(sub_data)
-            num += 1
+                    sub_data[2]=line[index]
+            master[line[0]] = galaxy_in(sub_data, param_index)
     print("File read in succesfully")
-    #print(sub_data)
-            
+
 def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
     global str_params, parameters, master
     ''' Reads the data in to list vars x, y, z'''
@@ -160,12 +168,33 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
     param_line=pyfits.getheader(f)
     param_line_keys=param_line.keys()
     data, param_line=pyfits.getdata(f, 1, header=True)
-    parameters=data.names
-    #for p in parameters:
-        #str_params += p + ' '
+    parameter_list=data.names
+    param_index=[0,0,0]
+    x_presence=False
+    y_presence=False
+    z_presence=False
+    for index in range(len(parameter_list)):
+        if parameter_list[index]==x_value:
+            x_presence=True
+            param_index[0]=index
+        if parameter_list[index]==y_value:
+            y_presence=True
+            param_index[1]=index
+        if parameter_list[index]==z_value:
+            z_presence=True
+            param_index[2]=index
+        parameters.append(parameter_list[index])
+        str_params += parameter_list[index] + ' '
+    if not x_presence:
+        raise KeyError (x_value)
+        if not y_presence:
+        raise KeyError (y_value)
+    if not z_presence and z_value!='':
+        raise KeyError (z_value)
     sub_data=[0,0,0]
     for line in data:
         print("Reading in galaxy "+str(line[0]))
+        line=line[:-1].split('\t')
         for index in range(len(line)):
             if parameters[index]==x_value:
                 sub_data[0]=line[index]
@@ -173,9 +202,9 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
                 sub_data[1]=line[index]
             elif parameters[index]==z_value:
                 sub_data[2]=line[index]
-        master[line[0]] = fits_galaxy_in(sub_data)
+        master[line[0]] = fits_galaxy_in(sub_data, param_index)
     print("File read in succesfully")
-
+    
     #file="fpObjc-003172-3-0134.fit"
         #lines = f.readlines()
         #param_line=lines[0].strip('\n').split('\t')
@@ -221,10 +250,10 @@ if __name__ == '__main__':
             print("Error: one or more of the specified files either does not exist of is not in this directory")
             continue
     #print(str_params) #not written
-    #print('\n\n')
+    print()
     print(master.items()) #check
-    print('\n\n')
+    print()
     print(parameters) #check
-    print('\n\n')
+    print()
     print(x,y,z) #check
     #plot(x_value, y_value, z_value, master)
