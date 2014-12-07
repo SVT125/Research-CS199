@@ -187,7 +187,7 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
         str_params += parameter_list[index] + ' '
     if not x_presence:
         raise KeyError (x_value)
-        if not y_presence:
+    if not y_presence:
         raise KeyError (y_value)
     if not z_presence and z_value!='':
         raise KeyError (z_value)
