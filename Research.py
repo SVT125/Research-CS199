@@ -6,58 +6,6 @@ import pyfits
 #import matplotlib
 #import matplotlib.pyplot as plt
 
-#todo:  find actual correlaations and the files associated with them, check for same galaxy names across files
-#       make tsv file read in, in this file
-#       find interesting correlations
-#       make it so you can read multiple files, assume all galaxy names are consistent (see 1)
-#       clean this file up
-
-
-def read_tsv(filename:'str') -> None:
-        '''Reads the TSV file and writes the spiral galaxy subset to file (for later use).'''
-        '''Writes the file by printing the variable names first, then separate by a line of asterisks.'''
-        f = open(filename,"r")
-        lines = []
-        first_line = f.readline().split("\t") # read in the variable 
-        information = {key: [] for key in first_line} # dictionary of variable lists (galaxies horizontally)
-        n = 0
-        for line in f:
-                n+=1
-                if n%100000==0:
-                        print("Copying line",n)
-                spl = line.split("\t")
-                for i in range(0,len(first_line)):
-                        word = first_line[i]
-                        information[word].append(spl[i])
-        f.close()
-
-        l = [information[quan] for quan in ["P_CS","diskAxisRatio"]]#data to work with of the quantities
-        
-        indices = []
-        number = [0.8,0.5]
-        
-        for i in range(len(l[0])):
-                to_return = True #Will be flipped off if one of the two quantities is off
-                for j in range(len(l)):
-                        num = abs(float(l[j][i]))
-                        if num <= number[j]:
-                                to_return = False
-                                
-                if to_return == True:
-                        indices.append(i)
-
-        # Print the file, each line a galaxy with its variables split by whitespace.
-        outfile = open('spiralgalaxies.txt','w')
-        for name in first_line:
-                outfile.write(name + '\t')
-        outfile.write('\n')
-        for index in indices:
-               for name in first_line:
-                       outfile.write(information[name][index] + '\t')
-               outfile.write('\n') 
-        outfile.close()
-
-
 parameters = []
 master = {} #A dictionary with the key as the name and the value as a 
             #Galaxy dict with each key value pair as a variable name and value
@@ -67,7 +15,7 @@ y=[]
 z=[]
 
 def setup(files):
-    global master, x, y, z, file_name
+    global master, x, y, z
     print("""Please input the coordinate value names. Note: if you press enter without 
 declaring a z value the program will continue as a 2 dimensional correlation. Also,
 please ensure that all values are the exact names as written in the data file.""")
@@ -76,6 +24,7 @@ please ensure that all values are the exact names as written in the data file.""
         y_value = input("What is the y coordinate value name: ").strip()
         z_value = input("What is the z coordinate value name: ").strip()
         break
+    done = False
     for file_name in files:
         try:
             if file_name.find('.fit') != -1:
@@ -85,33 +34,39 @@ please ensure that all values are the exact names as written in the data file.""
             elif file_name.find('.tsv') != -1:
                 read_tsv(file_name)
                 read_data('{}.txt'.format(file_name[0:-4]), x_value, y_value, z_value)
+            else:
+                print("File "+file_name+" is not a supported file type\n"+
+                      "Supported file types include: .fit .fits .tsv .txt")
+                return
             for k,v in sorted(master.items()):
                 x.append(v[x_value])
                 y.append(v[y_value])
                 if z_value != '':
                     z.append(v[z_value])
+            done = True
         except KeyError as err:
             print("{} was not found in file {}".format(err,file_name))
-            setup(files)
+    if not done:
+        print("One or more of the specified values was not found in any given file")
+        setup(files)
     return
 
 def galaxy_in(data:[str], param_index:[int]):
     galaxy={}
     for index in range(len(data)):
-        try:
-            galaxy[parameters[param_index[index]]] = int(data[index])
-        except:
-            galaxy[parameters[param_index[index]]] = data[index]
+        if param_index[index]==0:
+            continue
+        galaxy[parameters[param_index[index]]] = data[index]
     return galaxy
 
-def fits_galaxy_in(data, param_index): #working on this now
+def fits_galaxy_in(data, param_index):
     global parameters
     galaxy={}
     index=0
     while True:
         try:
             galaxy[parameters[param_index[index]]] = data[index]
-            index+=1
+            index += 1
         except (IndexError):
             break
     return galaxy
@@ -147,15 +102,16 @@ def read_data(file_name: str, x_value, y_value, z_value) -> None:
             raise KeyError (z_value)
         sub_data=[0,0,0]
         for line in lines:
-            line=line[:-1].split('\t')
+            line=line.strip('\n').split('\t')
             for index in range(len(line)):
                 if parameters[index]==x_value:
                     sub_data[0]=line[index]
                 elif parameters[index]==y_value:
                     sub_data[1]=line[index]
-                elif parameters[index]==z_value:
+                elif parameters[index]==z_value and z_value != '':
                     sub_data[2]=line[index]
             master[line[0]] = galaxy_in(sub_data, param_index)
+    print(master.items())
     print("File read in succesfully")
 
 def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
@@ -201,7 +157,45 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
                 sub_data[2]=line[index]
         master[line[0]] = fits_galaxy_in(sub_data, param_index)
     print("File read in succesfully")
-    
+
+def read_tsv(filename:'str') -> None:
+    '''Reads the TSV file and writes the spiral galaxy subset to file (for later use).'''
+    '''Writes the file by printing the variable names first, then separate by a line of asterisks.'''
+    with open(filename, 'r') as f:
+        lines = []
+        first_line = f.readline().split("\t") # read in the variable 
+        information = {key: [] for key in first_line} # dictionary of variable lists (galaxies horizontally)
+        n = 0
+        for line in f:
+            n+=1
+            if n%100000==0:
+                print("Copying line",n)
+            spl = line.split("\t")
+            for i in range(0,len(first_line)):
+                word = first_line[i]
+                information[word].append(spl[i])
+        l = [information[quan] for quan in ["P_CS","diskAxisRatio"]]#data to work with of the quantities
+        indices = []
+        number = [0.8,0.5]
+        for i in range(len(l[0])):
+            to_return = True #Will be flipped off if one of the two quantities is off
+            for j in range(len(l)):
+                num = abs(float(l[j][i]))
+                if num <= number[j]:
+                    to_return = False
+            if to_return == True:
+                indices.append(i)
+        # Print the file, each line a galaxy with its variables split by whitespace.
+        outfile = open('spiralgalaxies.txt','w')
+        for name in first_line:
+            outfile.write(name + '\t')
+        outfile.write('\n')
+        for index in indices:
+            for key in information.keys():
+                outfile.write(information[key][index] + '\t')
+            outfile.write('\n') 
+        outfile.close()
+
     #file="fpObjc-003172-3-0134.fit"
         #lines = f.readlines()
         #param_line=lines[0].strip('\n').split('\t')
@@ -225,7 +219,7 @@ def files(number: int):
     for file in result:
         if not os.path.isfile(file):
             raise FileNotFoundError
-    print(result)
+    print("Files to be use: "+str(result))
     return result
 
 if __name__ == '__main__':
@@ -248,9 +242,9 @@ if __name__ == '__main__':
             continue
     #print(str_params) #not written
     print()
-    print(master.items()) #check
+    print(list(master.items()))
     print()
-    print(parameters) #check
+    print(parameters)
     print()
-    print(x,y,z) #check
+    print(x,y,z)
     #plot(x_value, y_value, z_value, master)
