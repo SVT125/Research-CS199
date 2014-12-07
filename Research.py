@@ -111,7 +111,7 @@ def read_data(file_name: str, x_value, y_value, z_value) -> None:
                 elif parameters[index]==z_value and z_value != '':
                     sub_data[2]=line[index]
             master[line[0]] = galaxy_in(sub_data, param_index)
-    print(master.items())
+    #print(master.items())
     print("File read in succesfully")
 
 def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
@@ -241,10 +241,10 @@ if __name__ == '__main__':
             print("Error: one or more of the specified files either does not exist of is not in this directory")
             continue
     #print(str_params) #not written
-    print()
-    print(list(master.items()))
-    print()
-    print(parameters)
-    print()
-    print(x,y,z)
+    #print()
+    #print(list(master.items()))
+    #print()
+    #print(parameters)
+    #print()
+    #print(x,y,z)
     #plot(x_value, y_value, z_value, master)
