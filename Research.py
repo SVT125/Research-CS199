@@ -1,6 +1,6 @@
 from collections import namedtuple
 import os.path
-#import pyfits
+import pyfits
 #from mpl_toolkits.mplot3d import Axes3D
 #from scipy.stats.stats import pearsonr
 #import matplotlib
