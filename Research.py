@@ -52,8 +52,8 @@ def read_tsv(filename:'str') -> None:
                 outfile.write(name + '\t')
         outfile.write('\n')
         for index in indices:
-               for key in information.keys():
-                       outfile.write(information[key][index] + '\t')
+               for name in first_line:
+                       outfile.write(information[name][index] + '\t')
                outfile.write('\n') 
         outfile.close()
 
