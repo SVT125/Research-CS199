@@ -110,11 +110,9 @@ def fits_galaxy_in(data, param_index): #working on this now
     index=0
     while True:
         try:
-            #print(data[index])
-            galaxy[parameters[index]]=data[index]
+            galaxy[parameters[param_index[index]]] = data[index]
             index+=1
         except (IndexError):
-            #print('indexerror')
             break
     return galaxy
 
@@ -194,7 +192,6 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
     sub_data=[0,0,0]
     for line in data:
         print("Reading in galaxy "+str(line[0]))
-        line=line[:-1].split('\t')
         for index in range(len(line)):
             if parameters[index]==x_value:
                 sub_data[0]=line[index]
