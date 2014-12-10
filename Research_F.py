@@ -32,7 +32,8 @@ please ensure that all values are the exact names as written in the data file.""
             elif file_name.find('.txt') != -1:
                 infile = open('varnamest.txt','r')
                 params = infile.readlines()
-                params2 = params[69:]
+                params2 = params
+                params = params[69:]
                 print('Number of parameters: ' + str(len(params)))
                 counter = 0
                 corrfile = open('results.txt','w')
