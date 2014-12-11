@@ -33,7 +33,7 @@ please ensure that all values are the exact names as written in the data file.""
                 infile = open('varnamest.txt','r')
                 params = infile.readlines()
                 params2 = params
-                params = params[69:]
+                params = params[90:]
                 print('Number of parameters: ' + str(len(params)))
                 counter = 0
                 corrfile = open('results.txt','w')
@@ -181,6 +181,8 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
             sub_data[2]=line[z_value]
         master[line[32]] = fits_galaxy_in(sub_data, param_index)
     print("File read in succesfully")
+    if z_value != '':
+        print_galaxies(master)
 
 def read_tsv(filename:'str') -> None:
     '''Reads the TSV file and writes the spiral galaxy subset to file (for later use).'''
@@ -268,6 +270,16 @@ def retrieve_dict_vector(d:dict,key:str) -> 'list of float':
         for example_key in d.keys():
                 vector.append(float(d[example_key][key]))
         return vector
+
+def print_galaxies(d:dict) -> None:
+    '''Prints the dictionary of galaxies in a txt file for PCA.'''
+    outfile = open('examples.txt','w')
+    for galaxy_key in d.keys():
+        line = ''
+        for variable_key in d[galaxy_key].keys():
+            line += str(d[galaxy_key][variable_key]) + ' '
+        outfile.write(line + '\n')
+    outfile.close()
 
 if __name__ == '__main__':
     while True:

@@ -103,9 +103,6 @@ numDcoArcsGE240
 numDcoArcsGE260
 numDcoArcsGE280
 numDcoArcsGE300
-_
-name2
-OBJID
 petroR50_g
 petroR50_r
 petroR50_i
@@ -115,7 +112,6 @@ petroR90_g
 petroR90_r
 petroR90_i
 petroR90_z
-OBJID2
 RA
 DEC
 NVOTE_TOT
