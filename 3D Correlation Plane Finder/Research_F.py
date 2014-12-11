@@ -31,27 +31,7 @@ please ensure that all values are the exact names as written in the data file.""
                 read_fits_data(file_name, x_value, y_value, z_value)
             elif file_name.find('.txt') != -1:
                 infile = open('varnamest.txt','r')
-                params = infile.readlines()
-                params2 = params
-                params = params[90:]
-                print('Number of parameters: ' + str(len(params)))
-                counter = 0
-                corrfile = open('results.txt','w')
-                for v1 in params:
-                        for v2 in params2:
-                            try:
-                                read_data(file_name, v1.strip('\n'), v2.strip('\n'), z_value)
-                                correlation = corr(v1.strip('\n'),v2.strip('\n'),master)
-                                if(abs(correlation) > 0.2):
-                                    print('Correlation: ' + str(correlation) + '\t' + v1 + '\t' + v2)
-                                    corrfile.write(v1 + '' + v2 + '' + str(correlation) + '\n\n')
-                                    corrfile.flush()
-                            except Exception as e:
-                                print(e)
-                                print('Skipping... ' + str(counter))
-                                counter += 1
-                                continue
-                corrfile.close()
+                read_data(file_name,x_value,y_value,z_value)
             elif file_name.find('.tsv') != -1:
                 read_tsv(file_name)
                 read_data('{}.txt'.format(file_name[0:-4]), x_value, y_value, z_value)
@@ -70,7 +50,8 @@ please ensure that all values are the exact names as written in the data file.""
     if not done:
         print("One or more of the specified values was not found in any given file")
         setup(files)
-    print('Correlation: ' + str(corr(x_value,y_value,master)))
+    if z_value != '':
+        print_galaxies(master)
     return
 
 def galaxy_in(data:[str], param_index:[int]):
@@ -181,8 +162,7 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
             sub_data[2]=line[z_value]
         master[line[32]] = fits_galaxy_in(sub_data, param_index)
     print("File read in succesfully")
-    if z_value != '':
-        print_galaxies(master)
+
 
 def read_tsv(filename:'str') -> None:
     '''Reads the TSV file and writes the spiral galaxy subset to file (for later use).'''

@@ -7,10 +7,10 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
-class PrincipalComponentAnalysis {
+class GalaxyPlanes {
 	private RealMatrix examples, covariance;
 	public static void main(String[] args) throws IOException {
-		PrincipalComponentAnalysis pca = new PrincipalComponentAnalysis();
+		GalaxyPlanes pca = new GalaxyPlanes();
 		pca.examples = pca.readExamples("examples.txt");
 		pca.examples = pca.normalize(pca.examples);
 		pca.covariance = pca.calculateCovariance(pca.examples);
@@ -18,30 +18,70 @@ class PrincipalComponentAnalysis {
 		SingularValueDecomposition svd = new SingularValueDecomposition(pca.covariance);
 		RealMatrix u = svd.getU(), s = svd.getS(), v = svd.getV();
 		System.out.println("Printing the matrix U");
-		for( int i = 0; i < 2; i++ ) {
-			for( int j = 0; j < u.getRowDimension(); j++ ) {
-				System.out.println(u.getEntry(i,j));			
-			}
-			System.out.println("Printed coordinate.");
-		}
-		int k = pca.calculateK(pca.examples,s);
-		RealMatrix subU = PrincipalComponentAnalysis.reduceMatrix(u,k);
-		RealMatrix reducedExamples = pca.calculatePCA(subU,pca.examples);
-		System.out.println("The sum of squared errors is: " + pca.calculateError(pca.examples,reducedExamples,subU));
-		pca.printExamples(reducedExamples,"reducedExamples.txt");
+		GalaxyPlanes.printFileMatrix(u);
+		
 		
 	}
 	
 	// Prints the matrix in a file. We assume here every example has 3 features to be reduced in a 2D plane.
-	public static void printFileMatrix(RealMatrix mat) {
-		PrintWriter pw = new PrintWriter(new BufferedWriter("coordinates_plane.txt"));
+	public static void printFileMatrix(RealMatrix mat) throws IOException {
+		PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("coordinates_plane.txt")));
 		for( int i = 0; i < 2; i++ ) {
-			for( int j = 0; j < u.getRowDimension(); j++ ) {
-				pw.println(u.getEntry(i,j));			
+			for( int j = 0; j < mat.getRowDimension(); j++ ) {
+				pw.println(mat.getEntry(i,j));			
 			}
 		}
 		pw.close();
 	}
+	
+	// Reads in the examples.
+	private RealMatrix readExamples(String fileName) throws IOException {
+		List<List<Double>> list = new ArrayList<List<Double>>();
+		File f = new File(fileName);
+		BufferedReader br = new BufferedReader(new FileReader(f));
+		String line;
+		while((line = br.readLine()) != null) {
+			List<Double> convertedStrings = new ArrayList<Double>();
+			List<String> strings = Arrays.asList(line.split("\\s+"));
+			for( String s : strings )
+				convertedStrings.add(Double.parseDouble(s));
+				
+			list.add(convertedStrings);
+		}	
+		int numExamples = list.size(), numFeatures = list.get(0).size();
+		BlockRealMatrix examples = new BlockRealMatrix(numExamples,numFeatures);
+		for( int i = 0; i < numExamples; i++ ) {
+			Double[] example = new Double[numFeatures];
+			list.get(i).toArray(example);
+			examples.setRowVector(i,new ArrayRealVector(example));
+		}
+		return examples;
+	}
+	
+	// NOT YET IMPLEMENTED!
+	/*public static void readGalaxyExamples() {
+		List<List<Double>> list = new ArrayList<List<Double>>();
+		File f = new File(fileName);
+		BufferedReader br = new BufferedReader(new FileReader(f));
+		String line;
+		while(line = br.readLine()) != "\n") { } // Hopefully this will skip the variable names...
+		while((line = br.readLine()) != null) {
+			List<Double> convertedStrings = new ArrayList<Double>();
+			List<String> strings = Arrays.asList(line.split("\\s+"));
+			for( String s : strings )
+				convertedStrings.add(Double.parseDouble(s));
+				
+			list.add(convertedStrings);
+		}	
+		int numExamples = list.size(), numFeatures = list.get(0).size();
+		BlockRealMatrix examples = new BlockRealMatrix(numExamples,numFeatures);
+		for( int i = 0; i < numExamples; i++ ) {
+			Double[] example = new Double[numFeatures];
+			list.get(i).toArray(example);
+			examples.setRowVector(i,new ArrayRealVector(example));
+		}
+		return examples;	
+	}*/
 	
 	// Returns the first k columns of mat.
 	public static RealMatrix reduceMatrix(RealMatrix mat, int k) {
@@ -92,31 +132,7 @@ class PrincipalComponentAnalysis {
 		}
 		return k;
 	}
-	
-	// Reads in the examples.
-	private RealMatrix readExamples(String fileName) throws IOException {
-		List<List<Double>> list = new ArrayList<List<Double>>();
-		File f = new File(fileName);
-		BufferedReader br = new BufferedReader(new FileReader(f));
-		String line;
-		while((line = br.readLine()) != null) {
-			List<Double> convertedStrings = new ArrayList<Double>();
-			List<String> strings = Arrays.asList(line.split("\\s+"));
-			for( String s : strings )
-				convertedStrings.add(Double.parseDouble(s));
-				
-			list.add(convertedStrings);
-		}	
-		int numExamples = list.size(), numFeatures = list.get(0).size();
-		BlockRealMatrix examples = new BlockRealMatrix(numExamples,numFeatures);
-		for( int i = 0; i < numExamples; i++ ) {
-			Double[] example = new Double[numFeatures];
-			list.get(i).toArray(example);
-			examples.setRowVector(i,new ArrayRealVector(example));
-		}
-		return examples;
-	}
-	
+
 	// Prints out the given RealMatrix to file.
 	private void printExamples(RealMatrix examples, String fileName) throws IOException {
 		PrintWriter pw = new PrintWriter(fileName);
