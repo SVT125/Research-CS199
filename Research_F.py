@@ -1,10 +1,11 @@
 from collections import namedtuple
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.stats.stats import pearsonr
 import os.path
 import pyfits
-from scipy.stats.stats import pearsonr
 import matplotlib
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import math
 
 parameters = []
 master = {} #A dictionary with the key as the name and the value as a 
@@ -19,39 +20,20 @@ def setup(files):
     print("""Please input the coordinate value names. Note: if you press enter without 
 declaring a z value the program will continue as a 2 dimensional correlation. Also,
 please ensure that all values are the exact names as written in the data file.""")
-    while True:
-        x_value = input("What is the x coordinate value name: ").strip()
-        y_value = input("What is the y coordinate value name: ").strip()
-        z_value = input("What is the z coordinate value name: ").strip()
-        break
     done = False
     for file_name in files:
         try:
             if file_name.find('.fit') != -1:
-                read_fits_data(file_name, x_value, y_value, z_value)
+                f=file_name
+                param_line=pyfits.getheader(f)
+                param_line_keys=param_line.keys()
+                data, param_line=pyfits.getdata(f, 1, header=True)
+                parameter_list=data.names
+                correlations(file_name,master,parameter_list,read_fits_data)
             elif file_name.find('.txt') != -1:
                 infile = open('varnamest.txt','r')
                 params = infile.readlines()
-                params2 = params
-                params = params[90:]
-                print('Number of parameters: ' + str(len(params)))
-                counter = 0
-                corrfile = open('results.txt','w')
-                for v1 in params:
-                        for v2 in params2:
-                            try:
-                                read_data(file_name, v1.strip('\n'), v2.strip('\n'), z_value)
-                                correlation = corr(v1.strip('\n'),v2.strip('\n'),master)
-                                if(abs(correlation) > 0.2):
-                                    print('Correlation: ' + str(correlation) + '\t' + v1 + '\t' + v2)
-                                    corrfile.write(v1 + '' + v2 + '' + str(correlation) + '\n\n')
-                                    corrfile.flush()
-                            except Exception as e:
-                                print(e)
-                                print('Skipping... ' + str(counter))
-                                counter += 1
-                                continue
-                corrfile.close()
+                correlations(file_name,master,params,read_data)
             elif file_name.find('.tsv') != -1:
                 read_tsv(file_name)
                 read_data('{}.txt'.format(file_name[0:-4]), x_value, y_value, z_value)
@@ -59,19 +41,40 @@ please ensure that all values are the exact names as written in the data file.""
                 print("File "+file_name+" is not a supported file type\n"+
                       "Supported file types include: .fit .fits .tsv .txt")
                 return
-            for k,v in sorted(master.items()):
-                x.append(v[x_value])
-                y.append(v[y_value])
-                if z_value != '':
-                    z.append(v[z_value])
             done = True
         except KeyError as err:
             print("{} was not found in file {}".format(err,file_name))
     if not done:
         print("One or more of the specified values was not found in any given file")
         setup(files)
-    print('Correlation: ' + str(corr(x_value,y_value,master)))
     return
+
+def correlations(file_name:str, d:dict, param_list:'list of str', reader:'function(file_name,x_value,y_value,z_value)') -> None:
+    '''Runs through the dictionary checkin every combination of variables. Continues if an exception is thrown.'''
+    params2 = param_list
+    #params = param_list[90:] #the starting index to start from in the parameter list in case we continue the process
+    print('Number of parameters: ' + str(len(params2)))
+    counter = 0
+    corrfile = open('results.txt','w')
+    for v1 in params2:
+            for v2 in params2:
+                try:
+                    z_value = ''
+                    reader(file_name, v1.strip('\n'), v2.strip('\n'), z_value)
+                    correlation = corr(v1.strip('\n'),v2.strip('\n'),master)
+                    if math.isnan(correlation) or abs(correlation) > 1:
+                        continue
+                    print('The found correlation: ' + str(correlation))
+                    if(abs(correlation) > 0.2):
+                        print('Correlation: ' + str(correlation) + '\t' + v1 + '\t' + v2)
+                        corrfile.write(v1 + '\t' + v2 + '\t' + str(correlation) + '\n\n')
+                        corrfile.flush()
+                except Exception as e:
+                    print(e)
+                    print('Skipping variable pair ' + v1 + '\t' + v2)
+                    continue
+    corrfile.close()
+    
 
 def galaxy_in(data:[str], param_index:[int]):
     galaxy={}
@@ -144,7 +147,7 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
     param_line_keys=param_line.keys()
     data, param_line=pyfits.getdata(f, 1, header=True)
     parameter_list=data.names
-    print(parameter_list)
+    #print(parameter_list)
     param_index=[0,0,0]
     x_presence=False
     y_presence=False
@@ -169,9 +172,9 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
         raise KeyError (z_value)
     sub_data=[0,0,0]
     galaxy_count = 0
-    for line in data and galaxy_count <= 100:
+    for line in data:
         galaxy_count += 1
-        print("Reading in galaxy "+str(line[32]))
+        #print("Reading in galaxy "+str(line[32]))
             #if parameters[index]==x_value:
         sub_data[0]=line[x_value]
             #elif parameters[index]==y_value:
@@ -180,6 +183,8 @@ def read_fits_data(file_name: str, x_value, y_value, z_value) -> None:
         if z_value != '':
             sub_data[2]=line[z_value]
         master[line[32]] = fits_galaxy_in(sub_data, param_index)
+        if galaxy_count >= 1000:
+            break
     print("File read in succesfully")
     if z_value != '':
         print_galaxies(master)
@@ -222,32 +227,6 @@ def read_tsv(filename:'str') -> None:
             outfile.write('\n') 
         outfile.close()
 
-    #file="fpObjc-003172-3-0134.fit"
-        #lines = f.readlines()
-        #param_line=lines[0].strip('\n').split('\t')
-        #param_line[-1]=param_line[-1][:]
-        #lines=lines[1:]
-        #for p in param_line:
-            #parameters.append(p)
-            #str_params += p + ' '
-        #for line in lines:
-            #master[line.split('\t')[0]] = galaxy_in(line.strip('\n').split('\t'))
-
-def files(number: int):
-    result = []
-    if number == 1:
-        result.append(input("What is the name of the file: "))
-    elif number > 1:
-        result = []
-        result.append(input("What is the name of the first file: "))
-        for i in range(number-1):
-            result.append(input("What is the name of the next file: "))
-    for file in result:
-        if not os.path.isfile(file):
-            raise FileNotFoundError
-    print("Files to be use: "+str(result))
-    return result
-
 def corr(x_key: 'key', y_key: 'key', galaxies: dict) -> float:
         '''Takes two lists of x,y to calculate the 2D Pearson correlation.'''
         x = retrieve_dict_vector(galaxies,x_key)
@@ -260,8 +239,6 @@ def plot(x_key:'key',y_key:'key', galaxies:dict, labels=None) -> None:
         x = retrieve_dict_vector(galaxies,x_key)
         y = retrieve_dict_vector(galaxies,y_key)
         plt.scatter(x,y)
-        if labels != None:
-                pass #outliers with labels
         plt.show()
 
 def retrieve_dict_vector(d:dict,key:str) -> 'list of float':
@@ -282,23 +259,6 @@ def print_galaxies(d:dict) -> None:
     outfile.close()
 
 if __name__ == '__main__':
-    while True:
-        try:
-            check = int(input("How many files will be used? "))
-            if check >=1:
-                file = files(check)
-                setup(file)
-                break
-            else:
-                print("Number of files must be 1 or more")
-                continue
-            break
-        except (ValueError):
-            print("Error: you must input an integer greater than 0")
-            continue
-        except (FileNotFoundError):
-            print("Error: one or more of the specified files either does not exist of is not in this directory")
-            continue
-        
-    #print(str_params) #not written
+    setup(input('Name of file: '))
+
     #plot(x_value, y_value, z_value, master)
