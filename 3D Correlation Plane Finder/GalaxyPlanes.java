@@ -26,7 +26,8 @@ class GalaxyPlanes {
 	// Prints the matrix in a file. We assume here every example has 3 features to be reduced in a 2D plane.
 	public static void printFileMatrix(RealMatrix mat) throws IOException {
 		PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("coordinates_plane.txt")));
-		for( int i = 0; i < 2; i++ ) {
+		int toReduce = mat.getColumnDimension();
+		for( int i = 0; i < toReduce; i++ ) {
 			for( int j = 0; j < mat.getRowDimension(); j++ ) {
 				pw.println(mat.getEntry(i,j));			
 			}
