@@ -7,6 +7,12 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
+// This class finds the 2D plane that best fits the data. 
+/* 
+It uses PCA (Principal Component Analysis) to do this; PCA attempts to reduce the dimension of the # of variables,
+by finding the best fitting dimension and flattening the points onto that dimension - here we only go as far
+finding this best dimension (the 2D plane).
+*/
 class GalaxyPlanes {
 	private RealMatrix examples, covariance;
 	public static void main(String[] args) throws IOException {
